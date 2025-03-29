@@ -33,7 +33,7 @@
       // - <Component key={k} /> -> jsx(Component, {}, k)
 
       import { jsx, jsxs, Fragment } from "react/jsx-runtime";
-      import React from "react";
+      import React, { useEffect, useRef, useState } from "react";
       import ReactDOMClient from "react-dom/client";
 
       function main() {
@@ -53,10 +53,51 @@
       }
 
       function App() {
+        const containerRef = useRef(null);
+        const [text, setText] = useState("Download");
+        const [logs, setLogs] = useState([]);
+
+        useEffect(() => {
+          if (!containerRef.current) return;
+
+          const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+              if (mutation.type === "childList") {
+                setLogs((prevLogs) => [
+                  ...prevLogs,
+                  `TextNode changed: ${mutation.target.textContent}`,
+                ]);
+              }
+            });
+          });
+        }, []);
+
         return (
           // <div>
           jsxs("div", {
-            children: [jsx("h1", { children: "Hello World!" }, void 0)],
+            children: [
+              // <h2>
+              jsx("h2", {
+                children: "Repact Text Node Tracking",
+              }),
+              // </h2>
+              // <div>
+              jsx("div", {
+                ref: { containerRef },
+                // <div>
+                children: jsxs("div", {
+                  children: [
+                    // {text}
+                    text,
+                    // <span>
+                    jsx("span", { children: " Now!" }),
+                    // </span>
+                  ],
+                }),
+                // </div>
+              }),
+              // </div>
+            ],
           })
           // </div>
         );
