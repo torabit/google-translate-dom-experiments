@@ -9,7 +9,9 @@
         "imports": {
           "react": "https://esm.sh/react@19.0.0",
           "react/": "https://esm.sh/react@19.0.0/",
-          "react-dom/": "https://esm.sh/react-dom@19.0.0/"
+          "react-dom/": "https://esm.sh/react-dom@19.0.0/",
+          "shiki/bundle/web": "https://esm.sh/shiki",
+          "@shikijs/transformers": "https://esm.sh/@shikijs/transformers"
         }
       }
     </script>
@@ -35,6 +37,8 @@
       import { jsx, jsxs, Fragment } from "react/jsx-runtime";
       import React, { useEffect, useRef, useState } from "react";
       import ReactDOMClient from "react-dom/client";
+      import { transformerNotationWordHighlight } from "@shikijs/transformers";
+      import { codeToHtml } from "shiki/bundle/web";
 
       function main() {
         const rootElement = document.getElementById("root");
@@ -56,8 +60,15 @@
         const containerRef = useRef(null);
         const [text, setText] = useState("Download");
         const [logs, setLogs] = useState([]);
-        const [renderingRound, setRenderingRound] = useState(0);
         const textNodeMap = useRef(new Map());
+        const [htmlCode, setHtmlCode] = useState("");
+
+        useEffect(() => {
+          if (containerRef.current) {
+            const html = containerRef.current.innerHTML;
+            setHtmlCode(formatHtmlString(html));
+          }
+        }, [text]);
 
         useEffect(() => {
           if (!containerRef.current) return;
@@ -67,7 +78,8 @@
             const textNode = child.firstChild;
 
             if (textNode) {
-              const currentRenderingRound = textNodeMap.current.get(textNode);
+              const currentRenderingRound =
+                textNodeMap.current.get(textNode) || 0;
               textNodeMap.current.set(textNode, currentRenderingRound + 1);
 
               setLogs((prevLogs) => [
@@ -78,7 +90,6 @@
               ]);
             }
           });
-          setRenderingRound((prev) => prev + 1);
         }, [text]);
         return (
           // <div>
@@ -90,16 +101,18 @@
               }),
               // </h2>
               // <div>
-              jsxs("div", {
+              jsx("div", {
                 ref: containerRef,
                 // <div>
-                children: [
-                  // {text}
-                  text,
-                  // <span>
-                  jsx("span", { children: " Now!" }),
-                  // </span>
-                ],
+                children: jsxs("div", {
+                  children: [
+                    // {text}
+                    text,
+                    // <span>
+                    jsx("span", { children: " Now!" }),
+                    // </span>
+                  ],
+                }),
                 // </div>
               }),
               // </div>
@@ -127,15 +140,106 @@
                 ),
               }),
               // </ul>
+              // <Code/>
+              jsx("div", {
+                className: "html-container",
+                children: jsx(Code, {
+                  code: htmlCode,
+                }),
+              }),
             ],
           })
           // </div>
         );
       }
 
+      function Code({ code }) {
+        const [htmlCode, setHtmlCode] = useState("");
+        useEffect(() => {
+          (async () => {
+            const html = await codeToHtml(code, {
+              lang: "html",
+              theme: "nord",
+              transformers: [transformerNotationWordHighlight()],
+            });
+            setHtmlCode(html);
+          })();
+        }, [code]);
+
+        if (!code) {
+          return null;
+        }
+
+        return (
+          // <div>
+          jsx("div", {
+            className: "html-structure",
+            dangerouslySetInnerHTML: { __html: htmlCode },
+          })
+          // </div>
+        );
+      }
+
+      function formatHtmlString(html) {
+        const div = document.createElement("div");
+        div.innerHTML = html;
+
+        const result = [];
+        let indentLevel = 0;
+
+        // ノードを再帰的に処理する関数
+        function processNode(node) {
+          if (node.nodeType === Node.TEXT_NODE) {
+            const textContent = node.textContent.trim();
+            if (textContent) {
+              result.push("  ".repeat(indentLevel) + textContent); // インデント追加
+            }
+          } else if (node.nodeType === Node.ELEMENT_NODE) {
+            result.push(
+              "  ".repeat(indentLevel) + `<${node.nodeName.toLowerCase()}>`
+            ); // 開タグ
+            indentLevel++; // 子ノードの処理時にインデントを増やす
+
+            Array.from(node.childNodes).forEach((child) => processNode(child)); // 子ノードを再帰的に処理
+
+            indentLevel--; // 親ノードに戻ったらインデントを減らす
+            result.push(
+              "  ".repeat(indentLevel) + `</${node.nodeName.toLowerCase()}>`
+            ); // 閉タグ
+          }
+        }
+
+        processNode(div);
+
+        return result.join("\n");
+      }
+
       main();
     </script>
-    <style></style>
+    <style>
+      body {
+        background-color: rgb(31 41 55/ 1);
+        color: rgb(243 244 246 / 1);
+      }
+      #root {
+        padding: 20px;
+        border-radius: 10px;
+        margin: auto;
+      }
+      .html-structure {
+        padding: 8px;
+        & > * {
+          background-color: transparent !important;
+        }
+      }
+      .html-container {
+        border: 1px solid rgb(107 114 128 / 1);
+        border-radius: 0.375rem;
+        padding: 8px;
+        background-color: rgb(31 41 55/ 1);
+        font-size: 1rem;
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>
