@@ -83,7 +83,7 @@
               // </h2>
               // <div>
               jsx("div", {
-                ref: { containerRef },
+                ref: containerRef,
                 // <div>
                 children: jsxs("div", {
                   children: [
@@ -97,6 +97,30 @@
                 // </div>
               }),
               // </div>
+              // <button>
+              jsx("button", {
+                children: "Change Text",
+                onClick: () =>
+                  setText((c) =>
+                    c === "Download" ? "Get Started" : "Download"
+                  ),
+              }),
+              // </button>
+              // <h3>
+              jsx("h3", {
+                children: "Logs",
+              }),
+              // </h3>
+              // <ul>
+              jsx("ul", {
+                children: logs.map(
+                  (log) =>
+                    // <li>
+                    jsx("li", { children: log, key: log })
+                  // </li>
+                ),
+              }),
+              // </ul>
             ],
           })
           // </div>
