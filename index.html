@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Google Dom Experiments</title>
+    <script type="importmap">
+      {
+        "imports": {
+          "react": "https://esm.sh/react@19.0.0",
+          "react/": "https://esm.sh/react@19.0.0/",
+          "react-dom/": "https://esm.sh/react-dom@19.0.0/"
+        }
+      }
+    </script>
+    <script type="module">
+      // jsx/jsxs rule of thumb:
+      //
+      // - Use jsxs if the `children` prop is an array expression with no spreads
+      // - Use jsx otherwise
+      //
+      // Also, when passing props,
+      //
+      // - Put the `key` named prop, if any, in the third argument
+      // - Put all the other props in properties of the second argument
+      //
+      // Example:
+      //
+      // - <Component /> -> jsx(Component, {})
+      // - <Component>{x}</Component> -> jsx(Component, { children: x })
+      // - <Component>{x}{y}</Component> -> jsxs(Component, { children: [x, y] })
+      // - <Component foo={bar} /> -> jsx(Component, { foo: bar })
+      // - <Component key={k} /> -> jsx(Component, {}, k)
+
+      import { jsx, jsxs, Fragment } from "react/jsx-runtime";
+      import React from "react";
+      import ReactDOMClient from "react-dom/client";
+
+      function main() {
+        const rootElement = document.getElementById("root");
+        const root = ReactDOMClient.createRoot(rootElement);
+        console.log(rootElement);
+        root.render(
+          //<>
+          jsxs(Fragment, {
+            children: [
+              // <App/>
+              jsx(App, {}),
+            ],
+          })
+          // </>
+        );
+      }
+
+      function App() {
+        return (
+          // <div>
+          jsxs("div", {
+            children: [jsx("h1", { children: "Hello World!" }, void 0)],
+          })
+          // </div>
+        );
+      }
+
+      main();
+    </script>
+    <style></style>
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
