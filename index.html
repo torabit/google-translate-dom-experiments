@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -56,22 +56,30 @@
         const containerRef = useRef(null);
         const [text, setText] = useState("Download");
         const [logs, setLogs] = useState([]);
+        const [renderingRound, setRenderingRound] = useState(0);
+        const textNodeMap = useRef(new Map());
 
         useEffect(() => {
           if (!containerRef.current) return;
 
-          const observer = new MutationObserver((mutations) => {
-            mutations.forEach((mutation) => {
-              if (mutation.type === "childList") {
-                setLogs((prevLogs) => [
-                  ...prevLogs,
-                  `TextNode changed: ${mutation.target.textContent}`,
-                ]);
-              }
-            });
-          });
-        }, []);
+          const children = Array.from(containerRef.current.children);
+          children.forEach((child) => {
+            const textNode = child.firstChild;
 
+            if (textNode) {
+              const currentRenderingRound = textNodeMap.current.get(textNode);
+              textNodeMap.current.set(textNode, currentRenderingRound + 1);
+
+              setLogs((prevLogs) => [
+                ...prevLogs,
+                `TextNode: "${textNode.textContent}" rendered ${
+                  currentRenderingRound + 1
+                } times`,
+              ]);
+            }
+          });
+          setRenderingRound((prev) => prev + 1);
+        }, [text]);
         return (
           // <div>
           jsxs("div", {
@@ -82,18 +90,16 @@
               }),
               // </h2>
               // <div>
-              jsx("div", {
+              jsxs("div", {
                 ref: containerRef,
                 // <div>
-                children: jsxs("div", {
-                  children: [
-                    // {text}
-                    text,
-                    // <span>
-                    jsx("span", { children: " Now!" }),
-                    // </span>
-                  ],
-                }),
+                children: [
+                  // {text}
+                  text,
+                  // <span>
+                  jsx("span", { children: " Now!" }),
+                  // </span>
+                ],
                 // </div>
               }),
               // </div>
@@ -101,8 +107,8 @@
               jsx("button", {
                 children: "Change Text",
                 onClick: () =>
-                  setText((c) =>
-                    c === "Download" ? "Get Started" : "Download"
+                  setText((prev) =>
+                    prev === "Download" ? "Get Started" : "Download"
                   ),
               }),
               // </button>
