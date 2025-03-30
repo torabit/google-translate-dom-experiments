@@ -85,6 +85,7 @@
 
         const book = new Book({
           en: new Catalog("en", {
+            landmark: msg("A landmark on the way home"),
             "breadcrumb-trails": msg(
               "There are <span>{breadcrumbs, number}</span> trails of {breadcrumbs, plural, one {crumb} other {crumbs}} <BreadEmoji/>"
             ),
@@ -93,6 +94,7 @@
             ),
           }),
           ja: new Catalog("ja", {
+            landmark: msg("帰り道の目印"),
             "breadcrumb-trails": msg(
               "パンくずの道しるべは <span>{breadcrumbs, number}</span> 個あります <BreadEmoji/>"
             ),
@@ -153,7 +155,16 @@
                     children: jsxs("div", {
                       children: [
                         // <span>
-                        jsx("span", {
+                        jsx(Fragment, {
+                          children: jsx(Translate, {
+                            book: book,
+                            id: "landmark",
+                          }),
+                        }),
+                        // </span>
+                        ": ",
+                        // <>
+                        jsx(Fragment, {
                           children: jsx(Translate, {
                             book: book,
                             id: "breadcrumb-trails",
@@ -162,7 +173,7 @@
                             span: jsx("span", { className: "hi18n-text-bold" }),
                           }),
                         }),
-                        // </span>
+                        // </>
                       ],
                     }),
                     // </div>
