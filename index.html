@@ -76,7 +76,21 @@
         const [logs, setLogs] = useState([]);
         const textNodeMap = useRef(new Map());
         const [htmlCode, setHtmlCode] = useState("");
-        const { t } = useI18n(book);
+
+        const { t } = useI18n(
+          new Book({
+            en: new Catalog("en", {
+              "breadcrumb-trails": msg(
+                "There are {breadcrumbs, plural, one {# breadcrumb} other {# breadcrumbs}} trails"
+              ),
+            }),
+            ja: new Catalog("ja", {
+              "breadcrumb-trails": msg(
+                "パンくずの道しるべは {breadcrumbs, number} 個あります"
+              ),
+            }),
+          })
+        );
 
         useEffect(() => {
           if (containerRef.current) {
@@ -252,22 +266,6 @@
 
         return result.join("\n");
       }
-
-      const catalogEn = new Catalog("en", {
-        "breadcrumb-trails": msg(
-          "There are {breadcrumbs, plural, one {# breadcrumb} other {# breadcrumbs}} trails"
-        ),
-      });
-      const catalogJa = new Catalog("ja", {
-        "breadcrumb-trails": msg(
-          "パンくずの道しるべは {breadcrumbs, number} 個あります"
-        ),
-      });
-
-      const book = new Book({
-        en: catalogEn,
-        ja: catalogJa,
-      });
 
       main();
     </script>
