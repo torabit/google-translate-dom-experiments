@@ -38,13 +38,7 @@
       // - <Component key={k} /> -> jsx(Component, {}, k)
 
       import { jsx, jsxs, Fragment } from "react/jsx-runtime";
-      import React, {
-        useEffect,
-        useRef,
-        useState,
-        createContext,
-        useContext,
-      } from "react";
+      import React, { useEffect, useRef, useState } from "react";
       import ReactDOMClient from "react-dom/client";
       import { transformerNotationWordHighlight } from "@shikijs/transformers";
       import { codeToHtml } from "shiki/bundle/web";
@@ -78,8 +72,7 @@
       function App() {
         const containerRef = useRef(null);
         const [breadcrumbs, setBreadcrumbs] = useState(0);
-        const [logs, setLogs] = useState([]);
-        const textNodeMap = useRef(new Map());
+        const [textNodeMap, setTextNodeMap] = useState(new Map());
         const [htmlCode, setHtmlCode] = useState("");
         const locale = useLocales()[0];
 
@@ -112,16 +105,12 @@
             const textNode = child.firstChild;
 
             if (textNode) {
-              const currentRenderingRound =
-                textNodeMap.current.get(textNode) || 0;
-              textNodeMap.current.set(textNode, currentRenderingRound + 1);
-
-              setLogs((prevLogs) => [
-                ...prevLogs,
-                `TextNode: "${textNode.textContent}" rendered ${
-                  currentRenderingRound + 1
-                } times`,
-              ]);
+              setTextNodeMap((prevMap) => {
+                const newMap = new Map(prevMap);
+                const currentRenderingRound = prevMap.get(textNode) || 0;
+                newMap.set(textNode, currentRenderingRound + 1);
+                return newMap;
+              });
             }
           });
         }, [breadcrumbs]);
@@ -209,11 +198,11 @@
                       // <ul>
                       jsx("ul", {
                         className: "logs-container",
-                        children: logs.map(
-                          (log) =>
-                            // <li>
-                            jsx("li", { children: log }, log)
-                          // </li>
+                        children: Array.from(textNodeMap.entries()).map(
+                          ([key, value]) =>
+                            jsx("li", {
+                              children: `TextNode: ${key.textContent} rendered ${value} times`,
+                            })
                         ),
                       }),
                       // </ul>
