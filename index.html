@@ -105,6 +105,16 @@
             const textNode = child.firstChild;
 
             if (textNode) {
+              // console.group("TextNode Update");
+              // console.log("Node:", textNode);
+              // console.log("Content:", textNode.textContent);
+              // console.log("Parent:", textNode.parentNode);
+              // console.log(
+              //   "Previous content in Map:",
+              //   textNodeMap.get(textNode)
+              // );
+              // console.groupEnd();
+
               setTextNodeMap((prevMap) => {
                 const newMap = new Map(prevMap);
                 const currentRenderingRound = prevMap.get(textNode) || 0;
@@ -288,7 +298,36 @@
         );
       }
 
-      function formatHtmlString(html) {
+      function formatHtmlString({ html, element }) {
+        // console.group("HTML Structure Change");
+        // console.log("Raw HTML:", html);
+
+        // const beforeStructure = new Map();
+        // const afterStructure = new Map();
+        // function mapStructure(node, map) {
+        //   if (node.nodeType === Node.TEXT_NODE) {
+        //     map.set(node, {
+        //       type: "text",
+        //       content: node.textContent,
+        //       parent: node.parentNode,
+        //     });
+        //   } else if (node.nodeType === Node.ELEMENT_NODE) {
+        //     map.set(node, {
+        //       type: "element",
+        //       tagName: node.nodeName,
+        //       attributes: Array.from(node.attributes),
+        //       children: Array.from(node.childNodes),
+        //     });
+        //   }
+        // }
+
+        // // 既存のDOM構造を記録
+        // const walkNode = (node) => {
+        //   mapStructure(node, beforeStructure);
+        //   node.childNodes.forEach(walkNode);
+        // };
+        // walkNode(element);
+
         const div = document.createElement("div");
         div.innerHTML = html;
 
@@ -306,7 +345,6 @@
             const attributes = Array.from(node.attributes || [])
               .map((attr) => {
                 if (attr.name === "class") {
-                  console.log(attr);
                   return `className="${attr.value}"`;
                 }
                 return `${attr.name}=${attr.value}`;
@@ -332,6 +370,10 @@
 
         processNode(div);
 
+        // console.log("Before structure:", beforeStructure);
+        // console.log("After structure:", afterStructure);
+        // console.groupEnd();
+
         return result.join("\n");
       }
 
@@ -347,19 +389,33 @@
           if (!element) return;
 
           const observer = new MutationObserver((mutations) => {
-            mutations.forEach(() => {
+            mutations.forEach((mutation) => {
+              // console.group("DOM Mutation");
+              // console.log("Type:", mutation.type);
+              // console.log("Target:", mutation.target);
+              // if (mutation.type === "childList") {
+              //   console.log("Added nodes:", mutation.addedNodes);
+              //   console.log("Removed nodes:", mutation.removedNodes);
+              // } else if (mutation.type === "characterData") {
+              //   console.log("Old value:", mutation.oldValue);
+              //   console.log("New value:", mutation.target.textContent);
+              // }
+              // console.groupEnd();
+
               const html = element.innerHTML;
-              setHtmlCode(formatHtmlString(html));
+              setHtmlCode(formatHtmlString({ html, element }));
             });
           });
 
           observer.observe(element, {
             childList: true,
             subtree: true,
+            characterData: true,
+            characterDataOldValue: true,
           });
 
           const html = element.innerHTML;
-          setHtmlCode(formatHtmlString(html));
+          setHtmlCode(formatHtmlString({ html, element }));
 
           return () => observer.disconnect();
         }, [element, locale]);
