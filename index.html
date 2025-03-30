@@ -48,7 +48,12 @@
       import ReactDOMClient from "react-dom/client";
       import { transformerNotationWordHighlight } from "@shikijs/transformers";
       import { codeToHtml } from "shiki/bundle/web";
-      import { LocaleProvider, useI18n, useLocales } from "@hi18n/react";
+      import {
+        LocaleProvider,
+        useI18n,
+        useLocales,
+        Translate,
+      } from "@hi18n/react";
       import { Book, Catalog, msg } from "@hi18n/core";
 
       function main() {
@@ -77,30 +82,29 @@
         const textNodeMap = useRef(new Map());
         const [htmlCode, setHtmlCode] = useState("");
 
-        const { t } = useI18n(
-          new Book({
-            en: new Catalog("en", {
-              "breadcrumb-trails": msg(
-                "There are {breadcrumbs, number} trails of {breadcrumbs, plural, one {crumb} other {crumbs}}"
-              ),
-              "leaves-a-trail-of-bread-crumbs": msg(
-                "Leaves a trail of bread crumbs"
-              ),
-            }),
-            ja: new Catalog("ja", {
-              "breadcrumb-trails": msg(
-                "パンくずの道しるべは {breadcrumbs, number} 個あります"
-              ),
-              "leaves-a-trail-of-bread-crumbs": msg("パンくずを落とす"),
-            }),
-          })
-        );
+        const book = new Book({
+          en: new Catalog("en", {
+            "breadcrumb-trails": msg(
+              "There are <span>{breadcrumbs, number}</span> trails of {breadcrumbs, plural, one {crumb} other {crumbs}} <BreadEmoji/>"
+            ),
+            "leaves-a-trail-of-bread-crumbs": msg(
+              "Leaves a trail of bread crumbs"
+            ),
+          }),
+          ja: new Catalog("ja", {
+            "breadcrumb-trails": msg(
+              "パンくずの道しるべは <span>{breadcrumbs, number}</span> 個あります <BreadEmoji/>"
+            ),
+            "leaves-a-trail-of-bread-crumbs": msg("パンくずを落とす"),
+          }),
+        });
+
+        const { t } = useI18n(book);
 
         useEffect(() => {
           if (containerRef.current) {
             const html = containerRef.current.innerHTML;
             setHtmlCode(formatHtmlString(html));
-            console.log(html);
           }
         }, [breadcrumbs]);
 
@@ -148,7 +152,13 @@
                       children: [
                         // <span>
                         jsx("span", {
-                          children: t("breadcrumb-trails", { breadcrumbs }),
+                          children: jsx(Translate, {
+                            book: book,
+                            id: "breadcrumb-trails",
+                            breadcrumbs,
+                            BreadEmoji: jsx(BreadEmoji, {}),
+                            span: jsx("span", { className: "hi18n-text-bold" }),
+                          }),
                         }),
                         // </span>
                       ],
@@ -309,6 +319,12 @@
         return result.join("\n");
       }
 
+      function BreadEmoji() {
+        return jsx("span", {
+          children: "🍞",
+        });
+      }
+
       main();
     </script>
     <style>
@@ -341,6 +357,10 @@
       }
       .hi18n-text {
         flex: 1;
+      }
+      .hi18n-text-bold {
+        font-weight: bold;
+        color: rgb(255, 178, 137);
       }
       .html-structure {
         padding: 8px;
