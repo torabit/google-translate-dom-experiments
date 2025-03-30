@@ -81,6 +81,7 @@
         const [logs, setLogs] = useState([]);
         const textNodeMap = useRef(new Map());
         const [htmlCode, setHtmlCode] = useState("");
+        const locale = useLocales()[0];
 
         const book = new Book({
           en: new Catalog("en", {
@@ -132,6 +133,7 @@
                 ? jsx(GetHTMLStructure, {
                     element: containerRef.current,
                     setHtmlCode: setHtmlCode,
+                    locale,
                   })
                 : null,
               // <h2>
@@ -325,7 +327,7 @@
         });
       }
 
-      function GetHTMLStructure({ element, setHtmlCode }) {
+      function GetHTMLStructure({ element, setHtmlCode, locale }) {
         useEffect(() => {
           if (!element) return;
 
@@ -345,7 +347,7 @@
           setHtmlCode(formatHtmlString(html));
 
           return () => observer.disconnect();
-        }, [element]);
+        }, [element, locale]);
       }
 
       main();
