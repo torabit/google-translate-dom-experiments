@@ -102,13 +102,6 @@
         const { t } = useI18n(book);
 
         useEffect(() => {
-          if (containerRef.current) {
-            const html = containerRef.current.innerHTML;
-            setHtmlCode(formatHtmlString(html));
-          }
-        }, [breadcrumbs]);
-
-        useEffect(() => {
           if (!containerRef.current) return;
 
           const children = Array.from(containerRef.current.children);
@@ -134,6 +127,13 @@
           // <div>
           jsxs("div", {
             children: [
+              // containerRef.current && <GetHTMLStructure/>
+              containerRef.current
+                ? jsx(GetHTMLStructure, {
+                    element: containerRef.current,
+                    setHtmlCode: setHtmlCode,
+                  })
+                : null,
               // <h2>
               jsx("h2", {
                 children: "React Text Node Tracking",
@@ -323,6 +323,29 @@
         return jsx("span", {
           children: "🍞",
         });
+      }
+
+      function GetHTMLStructure({ element, setHtmlCode }) {
+        useEffect(() => {
+          if (!element) return;
+
+          const observer = new MutationObserver((mutations) => {
+            mutations.forEach(() => {
+              const html = element.innerHTML;
+              setHtmlCode(formatHtmlString(html));
+            });
+          });
+
+          observer.observe(element, {
+            childList: true,
+            subtree: true,
+          });
+
+          const html = element.innerHTML;
+          setHtmlCode(formatHtmlString(html));
+
+          return () => observer.disconnect();
+        }, [element]);
       }
 
       main();
