@@ -141,6 +141,7 @@
                 className: "hi18n-text-container",
                 children: [
                   jsx("div", {
+                    className: "hi18n-text",
                     ref: containerRef,
                     // <div>
                     children: jsxs("div", {
@@ -155,12 +156,16 @@
                     // </div>
                   }),
                   // </div>
-                  // <button>
-                  jsx("button", {
-                    children: t("leaves-a-trail-of-bread-crumbs"),
-                    onClick: () => setBreadcrumbs((prev) => prev + 1),
+                  jsx("div", {
+                    className: "button-container",
+                    children:
+                      // <button>
+                      jsx("button", {
+                        children: t("leaves-a-trail-of-bread-crumbs"),
+                        onClick: () => setBreadcrumbs((prev) => prev + 1),
+                      }),
+                    // </button>
                   }),
-                  // </button>
                 ],
               }),
               // </div>
@@ -334,6 +339,9 @@
         gap: 1rem;
         align-items: center;
       }
+      .hi18n-text {
+        flex: 1;
+      }
       .html-structure {
         padding: 8px;
         & > * {
@@ -363,6 +371,9 @@
         border-radius: 0.375rem;
       }
       .logs-container-wrapper {
+        flex: 1;
+      }
+      .button-container {
         flex: 1;
       }
     </style>
