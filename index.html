@@ -137,34 +137,32 @@
               jsxs("div", {
                 className: "hi18n-text-container",
                 children: [
-                  jsx("div", {
+                  jsxs("div", {
                     className: "hi18n-text",
                     ref: containerRef,
                     // <div>
-                    children: jsxs("div", {
-                      children: [
-                        // <span>
-                        jsx(Fragment, {
-                          children: jsx(Translate, {
-                            book: book,
-                            id: "landmark",
-                          }),
+                    children: [
+                      // <span>
+                      jsx(Fragment, {
+                        children: jsx(Translate, {
+                          book: book,
+                          id: "landmark",
                         }),
-                        // </span>
-                        ": ",
-                        // <>
-                        jsx(Fragment, {
-                          children: jsx(Translate, {
-                            book: book,
-                            id: "breadcrumb-trails",
-                            breadcrumbs,
-                            BreadEmoji: jsx(BreadEmoji, {}),
-                            span: jsx("span", { className: "hi18n-text-bold" }),
-                          }),
+                      }),
+                      // </span>
+                      ": ",
+                      // <>
+                      jsx(Fragment, {
+                        children: jsx(Translate, {
+                          book: book,
+                          id: "breadcrumb-trails",
+                          breadcrumbs,
+                          BreadEmoji: jsx(BreadEmoji, {}),
+                          span: jsx("span", { className: "hi18n-text-bold" }),
                         }),
-                        // </>
-                      ],
-                    }),
+                      }),
+                      // </>
+                    ],
                     // </div>
                   }),
                   // </div>
