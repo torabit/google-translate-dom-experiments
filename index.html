@@ -3,15 +3,18 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Google Dom Experiments</title>
+    <title>React Text Node Tracking</title>
     <script type="importmap">
       {
         "imports": {
-          "react": "https://esm.sh/react@19.0.0",
-          "react/": "https://esm.sh/react@19.0.0/",
-          "react-dom/": "https://esm.sh/react-dom@19.0.0/",
+          "react": "https://esm.sh/react@^18.0.0",
+          "react/": "https://esm.sh/react@^18.0.0/",
+          "react-dom/": "https://esm.sh/react-dom@^18.0.0/",
           "shiki/bundle/web": "https://esm.sh/shiki",
-          "@shikijs/transformers": "https://esm.sh/@shikijs/transformers"
+          "@shikijs/transformers": "https://esm.sh/@shikijs/transformers",
+          "@hi18n/core": "https://esm.sh/@hi18n/core",
+          "@hi18n/react": "https://esm.sh/@hi18n/react",
+          "@hi18n/react-context": "https://esm.sh/@hi18n/react-context"
         }
       }
     </script>
@@ -35,10 +38,18 @@
       // - <Component key={k} /> -> jsx(Component, {}, k)
 
       import { jsx, jsxs, Fragment } from "react/jsx-runtime";
-      import React, { useEffect, useRef, useState } from "react";
+      import React, {
+        useEffect,
+        useRef,
+        useState,
+        createContext,
+        useContext,
+      } from "react";
       import ReactDOMClient from "react-dom/client";
       import { transformerNotationWordHighlight } from "@shikijs/transformers";
       import { codeToHtml } from "shiki/bundle/web";
+      import { LocaleProvider, useI18n, useLocales } from "@hi18n/react";
+      import { Book, Catalog, msg } from "@hi18n/core";
 
       function main() {
         const rootElement = document.getElementById("root");
@@ -47,8 +58,12 @@
           //<>
           jsxs(Fragment, {
             children: [
-              // <App/>
-              jsx(App, {}),
+              // <LanguageContainer>
+              jsx(LanguageContainer, {
+                // <App/>
+                children: jsx(App, {}),
+              }),
+              // </LanguageContainer>
             ],
           })
           // </>
@@ -57,17 +72,18 @@
 
       function App() {
         const containerRef = useRef(null);
-        const [text, setText] = useState("Download");
+        const [breadcrumbs, setBreadcrumbs] = useState(0);
         const [logs, setLogs] = useState([]);
         const textNodeMap = useRef(new Map());
         const [htmlCode, setHtmlCode] = useState("");
+        const { t } = useI18n(book);
 
         useEffect(() => {
           if (containerRef.current) {
             const html = containerRef.current.innerHTML;
             setHtmlCode(formatHtmlString(html));
           }
-        }, [text]);
+        }, [breadcrumbs]);
 
         useEffect(() => {
           if (!containerRef.current) return;
@@ -89,7 +105,8 @@
               ]);
             }
           });
-        }, [text]);
+        }, [breadcrumbs]);
+
         return (
           // <div>
           jsxs("div", {
@@ -105,10 +122,10 @@
                 // <div>
                 children: jsxs("div", {
                   children: [
-                    // {text}
-                    text,
                     // <span>
-                    jsx("span", { children: " Now!" }),
+                    jsx("span", {
+                      children: t("breadcrumb-trails", { breadcrumbs }),
+                    }),
                     // </span>
                   ],
                 }),
@@ -117,11 +134,8 @@
               // </div>
               // <button>
               jsx("button", {
-                children: "Change Text",
-                onClick: () =>
-                  setText((prev) =>
-                    prev === "Download" ? "Get Started" : "Download"
-                  ),
+                children: "パンくずを落とす",
+                onClick: () => setBreadcrumbs((prev) => prev + 1),
               }),
               // </button>
               // <h3>
@@ -134,21 +148,47 @@
                 children: logs.map(
                   (log) =>
                     // <li>
-                    jsx("li", { children: log, key: log })
+                    jsx("li", { children: log }, log)
                   // </li>
                 ),
               }),
               // </ul>
-              // <Code/>
               jsx("div", {
                 className: "html-container",
+                // <Code/>
                 children: jsx(Code, {
                   code: htmlCode,
                 }),
               }),
             ],
           })
-          // </div>
+          // </LocaleProvider>
+        );
+      }
+
+      function LanguageContainer({ children }) {
+        const [locale, setLocale] = useState("en");
+        const toggleLocale = () =>
+          setLocale((prev) => (prev === "en" ? "ja" : "en"));
+
+        return (
+          // <LocaleProvider>
+          jsxs(LocaleProvider, {
+            locales: locale,
+            children: [
+              // <button>
+              jsx("button", {
+                // {locale}
+                children: locale,
+                onClick: toggleLocale,
+              }),
+              // </button>
+
+              // {children}
+              children,
+            ],
+          })
+          // </LocaleProvider>
         );
       }
 
@@ -212,6 +252,22 @@
 
         return result.join("\n");
       }
+
+      const catalogEn = new Catalog("en", {
+        "breadcrumb-trails": msg(
+          "There are {breadcrumbs, plural, one {# breadcrumb} other {# breadcrumbs}} trails"
+        ),
+      });
+      const catalogJa = new Catalog("ja", {
+        "breadcrumb-trails": msg(
+          "パンくずの道しるべは {breadcrumbs, plural, one {#個} other {#個}} あります"
+        ),
+      });
+
+      const book = new Book({
+        en: catalogEn,
+        ja: catalogJa,
+      });
 
       main();
     </script>
