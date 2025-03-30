@@ -43,7 +43,6 @@
       function main() {
         const rootElement = document.getElementById("root");
         const root = ReactDOMClient.createRoot(rootElement);
-        console.log(rootElement);
         root.render(
           //<>
           jsxs(Fragment, {
@@ -97,7 +96,7 @@
             children: [
               // <h2>
               jsx("h2", {
-                children: "Repact Text Node Tracking",
+                children: "React Text Node Tracking",
               }),
               // </h2>
               // <div>
