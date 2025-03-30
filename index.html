@@ -158,7 +158,10 @@
                           id: "breadcrumb-trails",
                           breadcrumbs,
                           BreadEmoji: jsx(BreadEmoji, {}),
-                          span: jsx("span", { className: "hi18n-text-bold" }),
+                          span: jsx("span", {
+                            id: "react-component",
+                            className: "hi18n-text-bold",
+                          }),
                         }),
                       }),
                       // </>
@@ -300,8 +303,21 @@
               result.push("  ".repeat(indentLevel) + textContent); // インデント追加
             }
           } else if (node.nodeType === Node.ELEMENT_NODE) {
+            const attributes = Array.from(node.attributes || [])
+              .map((attr) => {
+                if (attr.name === "class") {
+                  console.log(attr);
+                  return `className="${attr.value}"`;
+                }
+                return `${attr.name}=${attr.value}`;
+              })
+              .filter(Boolean)
+              .join(" ");
             result.push(
-              "  ".repeat(indentLevel) + `<${node.nodeName.toLowerCase()}>`
+              "  ".repeat(indentLevel) +
+                `<${node.nodeName.toLowerCase()}${
+                  attributes ? " " + attributes : ""
+                }>`
             ); // 開タグ
             indentLevel++; // 子ノードの処理時にインデントを増やす
 
@@ -321,6 +337,7 @@
 
       function BreadEmoji() {
         return jsx("span", {
+          id: "react-component",
           children: "🍞",
         });
       }
